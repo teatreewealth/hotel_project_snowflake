@@ -1,0 +1,55 @@
+/*
+There are 4 tables needed for this project:
+    dim_property_building
+    dim_global_region
+    dim_country
+    dim_property_usage
+*/
+
+
+--create property_building_table
+CREATE OR REPLACE TABLE dim_property_building (
+    property_building_skey NUMBER(38,0) NOT NULL,
+    city_name VARCHAR(16777216),
+    country_skey NUMBER(38,0) NOT NULL,
+    property_building_name VARCHAR(16777216),
+    year_property_built NUMBER(38,0),
+    CONSTRAINT pk_propertybuilding PRIMARY KEY (property_building_skey)
+);
+
+
+--create global region table
+CREATE OR REPLACE TABLE dim_global_region (
+    edp_global_region_skey NUMBER(38,0) NOT NULL,
+    global_region_desc VARCHAR(255),
+    global_region_code VARCHAR(50),
+    CONSTRAINT xpkdimension_global_region PRIMARY KEY (edp_global_region_skey)
+);
+
+
+--create country table
+create or replace TABLE dim_country (
+	dim_country_skey NUMBER(38,0) NOT NULL,
+	coutry_code VARCHAR(10),
+	country_name VARCHAR(50),
+	global_region_skey NUMBER(38,0) NOT NULL,
+	currency_code VARCHAR(4),
+	currency_code_desc VARCHAR(50),
+	iso_country_code VARCHAR(3),
+	constraint xpkdimendion_country primary key (dim_country_skey)
+)
+
+--property usage table
+create or replace table dim_property_usage (
+    dim_property_usage_skey NUMBER(38,0) NOT NULL,
+    property_usage_type_skey NUMBER(38,0),
+    property_usage_type_desc VARCHAR(255),
+    property_usage_sub_type_skey NUMBER(38,0),
+    property_usage_sub_type_desc VARCHAR(255),
+    property_division_skey NUMBER(38,0),
+	property_division_desc VARCHAR(255),
+    property_building_skey NUMBER(38,0),
+    constraint xpkdimension_property_usage primary key (property_usage_skey)
+    constraint fk_property_building foreign key (property_building_skey) references dim_property_building(property_building_skey)
+);
+
