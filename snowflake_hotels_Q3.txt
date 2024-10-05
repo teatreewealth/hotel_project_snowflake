@@ -1,0 +1,47 @@
+/*
+Question #3
+What are the top 10 cities by number of full-service hotels in Continental Europe and the UK? Your output must have the following columns:
+city_name
+country_name
+num_full_service_hotels
+
+Sort the result by number of full service hotels in descending order.
+*/
+
+--Output script 
+SELECT TOP 10
+    pb.city_name,
+    c.country_name,    
+    COUNT(pb.dim_property_building_skey) AS num_full_service_hotels
+FROM dim_property_building pb
+INNER JOIN dim_country c ON c.dim_country_skey = pb.dim_country_skey
+INNER JOIN dim_global_region gr ON gr.edp_global_region_skey = c.global_region_skey
+LEFT JOIN dim_property_usage pu ON pu.dim_property_building_skey = pb.dim_property_building_skey
+LEFT JOIN dim_division d ON d.edp_division_skey = pu.property_division_skey
+WHERE 
+    year_property_built IS NOT NULL
+    AND gr.edp_global_region_skey = 11010003
+    AND pb.property_building_name IS NOT NULL
+    AND pu.property_usage_type_skey = 111
+    AND pu.property_usage_sub_type_skey = 177
+    AND LOWER(pu.property_division_desc) in ('continental europe', 'united kingdom')
+GROUP BY pb.city_name, c.country_name
+ORDER BY COUNT(pb.dim_property_building_skey) DESC;
+
+--Solution script
+SELECT TOP 10
+    pb.city_name,
+    c.country_name,    
+    COUNT(pb.dim_property_building_skey) AS num_full_service_hotels
+FROM dim_property_building pb
+INNER JOIN dim_country c ON c.dim_country_skey = pb.dim_country_skey
+INNER JOIN dim_global_region gr ON gr.edp_global_region_skey = c.global_region_skey
+LEFT JOIN dim_property_usage pu ON pu.dim_property_building_skey = pb.dim_property_building_skey
+LEFT JOIN dim_division d ON d.edp_division_skey = pu.property_division_skey
+WHERE 
+    AND gr.edp_global_region_skey = 11010003
+    AND pu.property_usage_type_skey = 111
+    AND pu.property_usage_sub_type_skey = 177
+    AND LOWER(pu.property_division_desc) in ('continental europe', 'united kingdom')
+GROUP BY pb.city_name, c.country_name
+ORDER BY COUNT(pb.dim_property_building_skey) DESC;

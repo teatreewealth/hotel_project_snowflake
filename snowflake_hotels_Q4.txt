@@ -1,0 +1,68 @@
+/*
+Question #4
+What are the top 5 cities in Iberia (Spain and Portugal) by number of full-service hotels? Calculate the total number of full service hotels by country and city and display the output with the following columns:
+    city_name
+    country_name
+    num_of_full_service_hotels 
+
+Sort the results by number of full service hotels in descending order. 
+*/
+
+/*Step 1
+   Search by  country codes ES (Spain) and PT (Portugal). Country codes have been imported to the coutry table without any previous data cleaning. 
+   It is possible there are trailing or leading spaces in the text. Overcome this potential issue by removing any space when filtering by country code. 
+*/
+
+SELECT 
+    country_code,
+    country_name,
+    iso_country_code,
+    country_skey
+    
+FROM dim_country
+WHERE 
+    TRIM(country_code) = 'ES'
+    --OR LOWER(country_name) ilike '%spain%';
+
+--Output script
+SELECT 
+    c.country_name,
+    pb.city_name,
+    COUNT(pb.dim_property_building_skey) AS num_full_service_hotels
+FROM dim_property_building pb
+INNER JOIN dim_country c ON c.dim_country_skey = pb.dim_country_skey
+INNER JOIN dim_global_region gr ON gr.edp_global_region_skey = c.global_region_skey
+LEFT JOIN dim_property_usage pu ON pu.dim_property_building_skey = pb.dim_property_building_skey
+LEFT JOIN dim_division d ON d.edp_division_skey = pu.property_division_skey
+WHERE 
+    year_property_built IS NOT NULL
+    AND gr.edp_global_region_skey = 11010003
+    AND pb.property_building_name IS NOT NULL
+    AND pu.property_usage_type_skey = 111
+    AND pu.property_usage_sub_type_skey = 177
+    AND TRIM(c.country_code) in ('ES', 'PT')
+GROUP BY ROLLUP(c.country_name, pb.city_name)
+HAVING 
+    COUNT(pb.dim_property_building_skey) > 5
+ORDER BY COUNT(pb.dim_property_building_skey) DESC;
+
+
+--Solution script
+SELECT 
+    c.country_name,
+    pb.city_name,
+    COUNT(pb.dim_property_building_skey) AS num_full_service_hotels
+FROM dim_property_building pb
+INNER JOIN dim_country c ON c.dim_country_skey = pb.dim_country_skey
+INNER JOIN dim_global_region gr ON gr.edp_global_region_skey = c.global_region_skey
+LEFT JOIN dim_property_usage pu ON pu.dim_property_building_skey = pb.dim_property_building_skey
+LEFT JOIN dim_division d ON d.edp_division_skey = pu.property_division_skey
+WHERE 
+    pu.property_usage_type_skey = 111
+    AND pu.property_usage_sub_type_skey = 177
+    AND TRIM(c.country_code) in ('ES', 'PT')
+GROUP BY ROLLUP(c.country_name, pb.city_name)
+HAVING 
+    COUNT(pb.dim_property_building_skey) > 5
+ORDER BY COUNT(pb.dim_property_building_skey) DESC
+;

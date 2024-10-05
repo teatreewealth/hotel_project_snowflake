@@ -1,0 +1,40 @@
+/*
+What are all real estate properties in EMEA from this commercial database? The output of the code should return 6 columns 
+    property_building_key
+    property_name
+    country_key
+    country_name
+    city_name
+    year_property_built
+and it must be sorted by country_key country_name in ascending order. Save the output as EMEA_properties_all. 
+
+*/
+/*
+Step 1: find the key for the EMEA global region. Use the table Global Region and search by global_region_desc. 
+        Search by EMEA capital letters. There are multiple EMEA regions in Global Region, and to find the active key you must 
+        search for global_region_code that begins with 'E-GRGN'
+    
+*/
+SELECT
+    gr.edp_global_region_skey,
+    gr.global_region_descr
+FROM
+    dim_global_region gr
+WHERE
+    UPPER(gr.global_region_descr) = 'EMEA'
+    AND LEFT(UPPER(gr.global_region_code), 6) LIKE 'E-GRGN';
+--Step 2: With the global_region_key found at step 1, search for all commercial properties located in EMEA. You will have to join property_building, global_region and country tables to find the answers and return the desired output.
+SELECT
+    pb.dim_property_building_skey AS property_key,
+    pb.property_building_name AS property_name,
+    c.iso_country_code AS country_code,
+    c.country_name,
+    pb.city_name,
+    year_property_built AS year_built,
+FROM
+    dim_property_building pb
+    INNER JOIN dim_country c ON c.dim_country_skey = pb.dim_country_skey
+    INNER JOIN dim_global_region gr ON gr.edp_global_region_skey = c.global_region_skey
+    LEFT JOIN dim_property_usage pu ON pu.dim_property_building_skey = pb.dim_property_building_skey
+WHERE
+    gr.edp_global_region_skey = 11010003;

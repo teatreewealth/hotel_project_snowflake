@@ -1,0 +1,47 @@
+/*
+Exercise 2
+What are the Full Service Hotels properties in EMEA? The output query must return the following 5 columns:
+    property_key
+    property_name
+    country_name
+    property_type
+    property_subtype
+
+It must be sorted by country_name in ascending order. Save the output as EMEA_full_service_hotels. 
+*/
+
+/*
+Step 1
+You must first find the keys for property type Hotel and property subtype Full Service Hotel. 
+Filter property_usage table by type and subtype to find the corresponding keys for Hotel type and Full Service Hotel subtype. 
+Use the property_usage_type_desc and property_usage_sub_type_desc to search key words "hotel" and "full service hotel" all lowercase. 
+To return a unique combination of property type and subtype make sure to use DISTINCT in the select statement otherwise the output will return duplicates. 
+*/
+SELECT DISTINCT
+    pu.property_usage_type_skey,
+    pu.property_usage_type_desc,
+    pu.property_usage_sub_type_skey,
+    pu.property_usage_sub_type_desc
+FROM dim_property_usage pu
+WHERE 
+    LOWER(pu.property_usage_type_desc) LIKE 'hotel'
+    AND LOWER(pu.property_usage_sub_type_desc) LIKE '%full service hotel%'
+
+/*
+Step 2: With the global_region_key found at step 1, search for all commercial properties located in EMEA. 
+You will have to join property_building, global_region and country tables to find the answers and return the desired output. 
+*/
+SELECT 
+    pb.dim_property_building_skey AS property_key,
+    pb.property_building_name AS property_name,
+    c.iso_country_code AS country_iso,
+    c.country_name,
+    pb.city_name,
+    year_property_built AS year_built,
+FROM dim_property_building pb
+INNER JOIN dim_country c ON c.dim_country_skey = pb.dim_country_skey
+INNER JOIN dim_global_region gr ON gr.edp_global_region_skey = c.global_region_skey
+LEFT JOIN dim_property_usage pu ON pu.dim_property_building_skey = pb.dim_property_building_skey
+WHERE 
+    gr.edp_global_region_skey = 11010003
+;
